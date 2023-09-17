@@ -5,24 +5,28 @@ import (
   "strconv"
 )
 
+// counterButton emits just the button that causes a HTMX POST to the given counter's increment.
 templ counterButton(counter *Counter) {
     <button
-        hx-get={fmt.Sprintf("/increment?counterID=%s", counter.GetID())}
+        hx-post={fmt.Sprintf("/counters/%s/increment", counter.GetID())}
         hx-target={"#"+counter.GetID()}>Increment</button>
 }
 
+// counterValue emits a div that displays the current value of the given counter.
 templ counterValue(counter *Counter) {
     <div id={counter.GetID()}>
         The counter is set to <span>{strconv.Itoa(counter.GetValue())}</span>
     </div>
 }
 
+// counterView emits a div that has both the button and value in it.
 templ counterView(counter *Counter) {
   <div>
     @counterButton(counter) @counterValue(counter)
   </div>
 }
 
+// counterPage emits a page (based on `page`) that contains a list of given counter views.
 templ counterPage(counterViews []templ.Component) {
   @page() {
     <div>
