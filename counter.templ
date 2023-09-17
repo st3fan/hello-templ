@@ -5,27 +5,29 @@ import (
   "strconv"
 )
 
-templ counterButton(counterID string) {
-    <button hx-get={fmt.Sprintf("/increment?counterID=%s", counterID)} hx-target={"#"+counterID}>Increment</button>
+templ counterButton(counter *Counter) {
+    <button
+        hx-get={fmt.Sprintf("/increment?counterID=%s", counter.GetID())}
+        hx-target={"#"+counter.GetID()}>Increment</button>
 }
 
-templ counterValue(counterID string, counterValue int) {
-    <div id={counterID}>
-        The counter is set to <span>{strconv.Itoa(counterValue)}</span>
+templ counterValue(counter *Counter) {
+    <div id={counter.GetID()}>
+        The counter is set to <span>{strconv.Itoa(counter.GetValue())}</span>
     </div>
 }
 
-templ counterView(counterID string, value int) {
+templ counterView(counter *Counter) {
   <div>
-    @counterButton(counterID) @counterValue(counterID, value)
+    @counterButton(counter) @counterValue(counter)
   </div>
 }
 
-templ counterPage(counters []templ.Component) {
+templ counterPage(counterViews []templ.Component) {
   @page() {
     <div>
-      for _, counter := range counters {
-        {!counter}
+      for _, counterView := range counterViews {
+        {!counterView}
       }
     </div>
   }

@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -17,14 +18,24 @@ import (
 //
 
 type Counter struct {
-	ID    string
-	Value int
+	id    string
+	value int
 }
 
-// TODO NewCounter and hide the value
+func NewCounter(id string) *Counter {
+	return &Counter{id: id, value: 0}
+}
 
 func (c *Counter) Increment() {
-	c.Value += 1
+	c.value += 1
+}
+
+func (c *Counter) GetValue() int {
+	return c.value
+}
+
+func (c *Counter) GetID() string {
+	return c.id
 }
 
 // Application state .. maybe Echo has a better way to handle this?
@@ -49,8 +60,8 @@ func helloHandler(c echo.Context) error {
 // Turn into CounterPageHandler - how to do this in templ
 func pageHandler(c echo.Context) error {
 	var counterViews []templ.Component
-	for _, counter := range counters {
-		counterViews = append(counterViews, counterView(counter.ID, counter.Value))
+	for counterID := range counters {
+		counterViews = append(counterViews, counterView(counters[counterID]))
 	}
 	component := counterPage(counterViews) // TODO pass a list of counters here
 	return renderComponent(c, http.StatusOK, component)
@@ -60,18 +71,19 @@ func pageHandler(c echo.Context) error {
 func incrementCounterHandler(c echo.Context) error {
 	counter, ok := counters[c.QueryParams().Get("counterID")]
 	if !ok {
-		return c.HTML(http.StatusNotFound, "")
+		return c.HTML(http.StatusNotFound, "") // How to deal errors like this with HTMX
 	}
 
 	counter.Increment()
-	component := counterValue(counter.ID, counter.Value) // TODO Pass counter
+	component := counterValue(counter)
 	return renderComponent(c, http.StatusOK, component)
 }
 
 func main() {
-	counters["jIoLgTyhBnHjuIkL"] = &Counter{ID: "jIoLgTyhBnHjuIkL"}
-	counters["hBgVgtyUhJWdjdEm"] = &Counter{ID: "hBgVgtyUhJWdjdEm"}
-	counters["iKJNbgtYhVndieSk"] = &Counter{ID: "iKJNbgtYhVndieSk"}
+	for i := 1; i <= 3; i++ {
+		counter := NewCounter(fmt.Sprintf("Counter-%d", i))
+		counters[counter.GetID()] = counter
+	}
 
 	e := echo.New()
 	e.Use(middleware.Logger())
