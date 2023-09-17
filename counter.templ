@@ -1,0 +1,36 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+package main
+
+import (
+  "fmt"
+  "strconv"
+)
+
+templ counterButton(counterID string) {
+    <button hx-get={fmt.Sprintf("/increment?counterID=%s", counterID)} hx-target={"#"+counterID}>Increment</button>
+}
+
+templ counterValue(counterID string, counterValue int) {
+    <div id={counterID}>
+        The counter is set to <span>{strconv.Itoa(counterValue)}</span>
+    </div>
+}
+
+templ counterView(counterID string, value int) {
+  <div>
+    @counterButton(counterID) @counterValue(counterID, value)
+  </div>
+}
+
+templ counterPage(counters []templ.Component) {
+  @page() {
+    <div>
+      for _, counter := range counters {
+        {!counter}
+      }
+    </div>
+  }
+}
